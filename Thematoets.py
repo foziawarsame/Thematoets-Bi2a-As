@@ -2,6 +2,7 @@
 #opzet code
 
 import re
+import matplotlib.pyplot as plt
 
 def inlezen_fasta(bestandsnaam):
     """Leest de fastafile in en maakt van de data 2 lijsten,
@@ -150,57 +151,124 @@ def taartdiagram(eiwitten, zinc):
     #len nemen van list en len nemen van dict.items
 
 
-
-def lengte(genoom):
-    """Zoekt in de lijst naar de genen en berekent per gen
-    de lengte door start positie - stop positie en
-    de gemiddelde lengte van een gen van e.elegans
+def genes(genoom):
+    """Zoekt in de genoom lijst naar alle genen en stopt die
+    in een aparte lijst
 
     :param genoom: - 2D list - lijst met al de genoom data
-    :return: lengtes - list - alle lengtes van de genen van e.elegans
+    :return: genen - list - lijst met alle genen
     """
 
-    #zoek in de kolom met namen naar "gene", met if "gene" in de kolom
-    #start = daarna zoek in kolom/index met start positie
-    #stop = kolom/index start positie
-    #len = start - stop, voeg toe aan lijst lengtes
-
-    lengtes = []
     genen = []
 
+    # Filtert in de genoom data naar alle genen en stopt die in een lijst
     for i in genoom:
         if len(i) < 2:
+            # Regels die we niet nodig hebben, bestaan uit weinig
+            # kolommen die wordenn eruit gefiltert
             continue
         if "gene" in i[2]:
             genen.append(i)
 
+    return genen
+
+
+
+def lengte(genen):
+    """Berekent per gen de lengte door start positie - stop positie en
+    de gemiddelde lengte van een gen van e.elegans
+
+    :param genen - list - lijst met alle genen
+    :return: lengtes - list - alle lengtes van de genen van C.elegans
+    """
+
+    lengtes = []
+
+    #Zoekt in de genen naar de start en stop positie om de lengte te
+    #bepalen en voegt alle lengtes van de genen aan een lijst
     for gen in genen:
         start = int(gen[3])
         stop = int(gen[4])
         lengte = stop - start
         lengtes.append(lengte)
 
+    #Berekent de langste en kortste gen
     langste = max(lengtes)
-    korste = min(lengtes)
-    gem = sum(lengtes) / len(lengtes)
+    kortste = min(lengtes)
+    #Berekent de gemiddelde lengte van een gen en rond het af
+    gem = round((sum(lengtes) / len(lengtes)), 0)
 
+    #Zoekt naar de index van het langste gen om te achterhalen
+    #welk (nummer) gen het is
     pos = 0
     for x in lengtes:
         pos +=1
         if x == langste:
-            positie = genen[pos][0]
+            #Zoekt door de genen lijst naar het gen en laat het
+            #chromosoom zien waar het gen bijhoort
+            chr_langste = genen[pos][0]
 
+    # Zoekt naar de index van het kortste gen om te achterhalen
+    # welk (nummer) gen het is
     pos = 0
     for x in lengtes:
         pos +=1
-        if x == korste:
-            positie = genen[pos][0]
+        if x == kortste:
+            # Zoekt door de genen lijst naar het gen en laat het
+            # chromosoom zien waar het gen bijhoort
+            chr_kortste = genen[pos][0]
 
-    print(gem)
-    print("Het langste gen is", langste, "en ligt op chromosoom", positie)
+    print("De gemiddelde lengte van een gen van C.elegans is", gem)
+    print("Het langste gen is", langste, "en ligt op chromosoom", chr_langste)
+    print("Het kortste gen is", kortste, "en ligt op chromosoom", chr_kortste)
+
+
+    return lengtes
+
+
+def chromosoom(genen):
+    """Kijkt naar het aantal genen per chromosoom
+
+    :param genen: - list - lijst met alle genen
+    :return:
+    """
+    chr = []
+    count = 0
+    test = []
+    for gen in genen:
+        if gen[0] == gen[0]:
+            count += 1
+        else:
+            test.append(count)
+            count = 0
+
+        chr.append(gen[0])
+
+    print(test)
+
+    lol = list(set(chr))
+    print(lol)
 
 
 
+def strand(genen):
+    """Kijkt naar hoeveel genen er op forward en reverse zitten,
+    en maalt een dict ervan. keys: forward, reverse; values: genen
+
+    :param genen:
+    :return:
+    """
+
+
+def boxplot(lengtes):
+    """Maakt een boxplot van de lengtes van alle genen van C.elegans
+
+    :param lengtes: - list - alle lengtes van de genen
+    :return:
+    """
+
+    plt.hist(lengtes)
+    plt.show()
 
 
 
@@ -216,4 +284,8 @@ if __name__ == '__main__':
     #taartdiagram(eiwitten, zinc)
     gff3file = "Caenorhabditis_elegans.gff3"
     genoom = inlezen_gff3(gff3file)
-    lengtes = lengte(genoom)
+    genen = genes(genoom)
+    #lengtes = lengte(genen)
+    chromosoom(genen)
+    strand(genen)
+    #boxplot(lengtes)
