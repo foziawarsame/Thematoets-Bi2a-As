@@ -78,43 +78,6 @@ def dictionary(headers, seqs):
     return eiwitten
 
 
-def dna(eiwitten):
-
-    code = {'ttt': 'F', 'tct': 'S', 'tat': 'Y', 'tgt': 'C',
-            'ttc': 'F', 'tcc': 'S', 'tac': 'Y', 'tgc': 'C',
-            'tta': 'L', 'tca': 'S', 'taa': '*', 'tga': '*',
-            'ttg': 'L', 'tcg': 'S', 'tag': '*', 'tgg': 'W',
-            'ctt': 'L', 'cct': 'P', 'cat': 'H', 'cgt': 'R',
-            'ctc': 'L', 'ccc': 'P', 'cac': 'H', 'cgc': 'R',
-            'cta': 'L', 'cca': 'P', 'caa': 'Q', 'cga': 'R',
-            'ctg': 'L', 'ccg': 'P', 'cag': 'Q', 'cgg': 'R',
-            'att': 'I', 'act': 'T', 'aat': 'N', 'agt': 'S',
-            'atc': 'I', 'acc': 'T', 'aac': 'N', 'agc': 'S',
-            'ata': 'I', 'aca': 'T', 'aaa': 'K', 'aga': 'R',
-            'atg': 'M', 'acg': 'T', 'aag': 'K', 'agg': 'R',
-            'gtt': 'V', 'gct': 'A', 'gat': 'D', 'ggt': 'G',
-            'gtc': 'V', 'gcc': 'A', 'gac': 'D', 'ggc': 'G',
-            'gta': 'V', 'gca': 'A', 'gaa': 'E', 'gga': 'G',
-            'gtg': 'V', 'gcg': 'A', 'gag': 'E', 'ggg': 'G'}
-
-    translatie = {"F": "TTT", "S": "TCT", "Y": "TAT", "C": "TGT",
-                  "F": "TTC", "S": "TCC", "Y": ""
-
-    }
-
-    dna = ""
-
-    for key, value in eiwitten.items():
-        for i in value:
-            amino = code[i]
-            dna += amino
-
-    print(dna)
-
-
-
-
-
 def zinc_finger(eiwitten):
     """Zoekt in de eiwitsequenties naar de consensus patroon
     doormiddel van een regular expression
@@ -122,33 +85,48 @@ def zinc_finger(eiwitten):
     :param eiwitten: - dict - alle eiwitten van e.elegans
     keys: de headers, values: de eiwitsequenties
     :return zinc: - list - alle eiwitten met een zinc finger
+            zonder_zinc - list - alle eiwitten zonder zinc finger
     """
 
     zinc = []
+    zonder_zinc = []
 
     for key, value in eiwitten.items():
-        match = re.search(r".*C.{2}C.{2}C.{5}C.{2}C.{2}C.*", value)
+        match = re.search(r"[^BJOUX].C[^BJOUX]{2}C[^BJOUX]{2}C[^BJOUX]{5}C[^BJOUX]{2}C[^BJOUX]{2}C[^BJOUX].", value)
         if match:
-            return True
+            zinc.append(value)
         else:
-            return False
+            zonder_zinc.append(key, value)
+    print("Het aantal eiwitten die een zinc finger bevatten: ", len(zinc))
+    print("Het aantal eiwitten die geen zinc finger bevatten: ", len(zonder_zinc))
+    return zinc, zonder_zinc
 
-    #.*C.{2}C.{2}C.{5}C.{2}C.{2}C.*
+    #ALLEEN DE SEQS WORDEN IN LIJST GESTOPT NIET DE HEADERS
 
 
-
-
-def taartdiagram(eiwitten, zinc):
+def taartdiagram(zinc, zonder_zinc, eiwitten):
     """Geeft in een grafiek weer hoeveel eiwitten/genen van e.elegans
     het zinc patroon hebben doormiddel van matplotlib
 
     :param eiwitten: - dict - alle eiwitten van e.elegans
     keys: de headers, values: de eiwitsequenties
-    :param zinc: - list - alle eiwitten met zinc patroon
+    :param zinc: - list - alle eiwitten met een zinc finger
     :return: grafiek - plot - hoeveelheid eiwitten met zinc patroon
     """
 
-    #len nemen van list en len nemen van dict.items
+    test = len(zinc)
+    lol = len(zonder_zinc)
+    totaal = len(eiwitten)
+
+    ok = int(test / totaal * 100)
+    ko = int(lol / totaal * 100)
+    proteins = [ok, ko]
+    groep = ["met zinc", "zonder zin"]
+
+
+    plt.pie(proteins, labels=groep, autopct="%1.f%%")
+    plt.show()
+
 
 
 def genes(genoom):
@@ -253,11 +231,25 @@ def chromosoom(genen):
 
 def strand(genen):
     """Kijkt naar hoeveel genen er op forward en reverse zitten,
-    en maalt een dict ervan. keys: forward, reverse; values: genen
+    en maakt een dict ervan. keys: forward, reverse; values: genen
 
     :param genen:
     :return:
     """
+
+    strand = []
+    aantal = []
+
+    for gen in genen:
+       strand += gen[6]
+
+    strands = list(set(strand))
+
+    for i in strands:
+        aantal.append(strand.count(i))
+
+    plt.plot(strands, aantal)
+    plt.show()
 
 
 def boxplot(lengtes):
@@ -279,13 +271,12 @@ if __name__ == '__main__':
     #fastafile = "Caenorhabditis_elegans.cds_pep.all.fa"
     #headers, seqs = inlezen_fasta(fastafile)
     #eiwitten = dictionary(headers, seqs)
-    #dna(eiwitten)
-    #zinc = zinc_finger(eiwitten)
-    #taartdiagram(eiwitten, zinc)
+    #zinc, zonder_zinc = zinc_finger(eiwitten)
+    #taartdiagram(zinc, zonder_zinc, eiwitten)
     gff3file = "Caenorhabditis_elegans.gff3"
     genoom = inlezen_gff3(gff3file)
     genen = genes(genoom)
     #lengtes = lengte(genen)
-    chromosoom(genen)
+    #chromosoom(genen)
     strand(genen)
     #boxplot(lengtes)
