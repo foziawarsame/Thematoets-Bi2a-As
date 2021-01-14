@@ -1,5 +1,5 @@
 # FOZIA WARSAME 638928 Bin1-c
-# Thematoets 13-01-2021
+# Thematoets 14-01-2021
 
 import re
 import matplotlib.pyplot as plt
@@ -231,7 +231,6 @@ def waarden(genen, lengtes):
               chr_langste)
         print("Het kortste gen is", kortste, "en ligt op chromosoom",
               chr_kortste)
-
     except ZeroDivisionError:
         print("Kan niet delen door 0")
     except TypeError:
